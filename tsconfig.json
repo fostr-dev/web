@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "target": "ES2020",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "lib": ["ES2019", "DOM", "DOM.Iterable", "ES2020"],
+        "downlevelIteration": true,
+        "esModuleInterop": true
+    },
+    "exclude": [
+        "dist/",
+        "node_modules/"
+    ]
+}
