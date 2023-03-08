@@ -122,7 +122,7 @@ export default function Repository(){
                 let p = `${hash}${path}`
                 if(files_loaded && files?.length){
                     // see if there's a readme in the dir, and display it
-                    const readme = files.find(e => /readme(\.md)?/.test(e.name?.toLowerCase()))
+                    const readme = files.find(e => /readme(\.(txt|md))?/.test(e.name?.toLowerCase()))
                     if(readme){
                         p = `${hash}${path}${readme.name}`
                     }else{
@@ -300,7 +300,11 @@ export default function Repository(){
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {files && files!.map((file, i) => {
+                        {files && files!.sort((a, b) => {
+                            if(a.type === "dir" && b.type !== "dir")return -1
+                            if(a.type !== "dir" && b.type === "dir")return 1
+                            return a.name.localeCompare(b.name)
+                        }).map((file, i) => {
                             const p = `${path}/${file.name}`.replace(/^\/+/g, "/")
                             return <TableRow
                                 key={i}

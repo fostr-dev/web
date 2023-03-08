@@ -45,6 +45,10 @@ export function getFileViewers(filePath:string){
             viewers.push(["text", "json"])
             break
         case "html":
+        case "qrc":
+        case "in":
+        case "plist":
+        case "xml":
             viewers.push(["text", "xml"])
             break
         case "js":
@@ -88,10 +92,10 @@ export function getFileViewers(filePath:string){
             viewers.push(["text", "yaml"])
             break
         case "toml":
-            viewers.push(["text", "toml"])
-            break
-        case "xml":
-            viewers.push(["text", "xml"])
+        case "conf":
+        case "config":
+        case "env":
+            viewers.push(["text", "ini"])
             break
         case "svg":
             viewers.push(["image", "svg"])
