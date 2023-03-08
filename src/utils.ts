@@ -82,6 +82,9 @@ export function getFileViewers(filePath:string){
             viewers.push(["text", "c"])
             break
         case "cpp":
+        case "c++":
+        case "h":
+        case "hpp":
             viewers.push(["text", "cpp"])
             break
         case "sh":

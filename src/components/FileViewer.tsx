@@ -32,7 +32,7 @@ export default function FileViewer({
                 }}
             >
                 {file.viewers.map((viewer, index) => {
-                    return <Tab label={viewer[0]} key={index} />
+                    return <Tab label={viewer[0] === "text" ? `Code (${viewer[1]})` : viewer[0]} key={index} />
                 })}
             </Tabs>
         </Box>

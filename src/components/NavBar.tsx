@@ -37,7 +37,7 @@ export default function NavBar() {
         }}>
             <Link component={RouterLink} to="/">
                 <Button>
-                    <img src={"/favicon_light.png"} draggable={false} style={{
+                    <img src={"/favicon.png"} draggable={false} style={{
                         height: 48,
                     }}/>
                 </Button>
