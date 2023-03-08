@@ -49,7 +49,7 @@ export default function Markdown({
                     try{
                         new URL(src!)
                         return <img
-                            src={src}
+                            src={`https://media-proxy.jeanouina.workers.dev/?url=${encodeURIComponent(src)}`}
                             alt={alt}
                         />
                     }catch{

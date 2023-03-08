@@ -1,5 +1,5 @@
 import { Folder, InsertDriveFileOutlined } from "@mui/icons-material";
-import { Box, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Divider, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
 import { Fragment, useMemo } from "react";
 import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
@@ -241,99 +241,42 @@ export default function Repository(){
             </Box>
         </Box>
 
-        { /* Directory header */}
-        <Box sx={{
-            display: "flex",
-            flexDirection: "row",
-            gap: 1,
-            justifyContent: "start",
+        <Divider sx={{
             width: "100%",
-            flexWrap: "wrap"
+        }} />
+
+        <Box sx={{
+            width: "100%",
+            maxWidth: "1200px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            alignItems: "center"
         }}>
-            { /* Path */}
+            { /* Directory header */}
             <Box sx={{
                 display: "flex",
                 flexDirection: "row",
-                gap: 1
+                gap: 1,
+                justifyContent: "start",
+                width: "100%",
+                flexWrap: "wrap"
             }}>
-                {
-                    [".", ...path.split("/")].map((p, i, arr) => {
-                        if(!p)return null
-                        const p2 = arr.slice(0, i + 1).slice(1).join("/") || "/"
-                        return <Fragment key={p2}>
-                            <Link
-                                to={`/${nip19.npubEncode(owner)}/${name}?path=${p2}`}
-                                component={RouterLink}
-                            >
-                                <Typography
-                                    variant="body1"
-                                    fontFamily="'Overpass Mono', monospace"
-                                    sx={{
-                                        wordBreak: "break-all"
-                                    }}
+                { /* Path */}
+                <Box sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: 1
+                }}>
+                    {
+                        [".", ...path.split("/")].map((p, i, arr) => {
+                            if(!p)return null
+                            const p2 = arr.slice(0, i + 1).slice(1).join("/") || "/"
+                            return <Fragment key={p2}>
+                                <Link
+                                    to={`/${nip19.npubEncode(owner)}/${name}?path=${p2}`}
+                                    component={RouterLink}
                                 >
-                                    {p}
-                                </Typography>
-                            </Link>
-                            <Typography variant="body1" color="grey">
-                                /
-                            </Typography>
-                        </Fragment>
-                    })
-                }
-            </Box>
-        </Box>
-
-        { /* Directory content */}
-        {!files_error && <Paper elevation={0} sx={{
-            width: "100%"
-        }}>
-            <TableContainer>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{
-                                width: "1px"
-                            }}>Type</TableCell>
-                            <TableCell>Name</TableCell>
-                            {!isMobile && <TableCell align="right">Size</TableCell>}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {files && files!.sort((a, b) => {
-                            if(a.type === "dir" && b.type !== "dir")return -1
-                            if(a.type !== "dir" && b.type === "dir")return 1
-                            return a.name.localeCompare(b.name)
-                        }).map((file, i) => {
-                            const p = `${path}/${file.name}`.replace(/^\/+/g, "/")
-                            return <TableRow
-                                key={i}
-                                sx={{
-                                    "&:last-child td, &:last-child th": {
-                                        border: 0
-                                    }
-                                }}
-                            >
-                                <TableCell>
-                                    {file.type === "dir" ? <Folder /> : <InsertDriveFileOutlined />}
-                                </TableCell>
-                                <TableCell>
-                                    <Link
-                                        to={`/${nip19.npubEncode(owner)}/${name}?path=${p}`}
-                                        component={RouterLink}
-                                    >
-                                        <Typography
-                                            variant="body1"
-                                            fontFamily="'Overpass Mono', monospace"
-                                            sx={{
-                                                wordBreak: "break-all"
-                                            }}
-                                        >
-                                            {file.name}
-                                        </Typography>
-                                    </Link>
-                                </TableCell>
-                                {!isMobile && <TableCell align="right">
                                     <Typography
                                         variant="body1"
                                         fontFamily="'Overpass Mono', monospace"
@@ -341,23 +284,93 @@ export default function Repository(){
                                             wordBreak: "break-all"
                                         }}
                                     >
-                                        {file.type !== "dir" && formatFileSize(file.size)}
+                                        {p}
                                     </Typography>
-                                </TableCell>}
-                            </TableRow>
-                        })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Paper>}
+                                </Link>
+                                <Typography variant="body1" color="grey">
+                                    /
+                                </Typography>
+                            </Fragment>
+                        })
+                    }
+                </Box>
+            </Box>
 
-        { /* File content */}
-        {!file_error && file && <Paper elevation={0} sx={{
-            width: "100%"
-        }}>
-            <FileViewer
-                file={file}
-            />
-        </Paper>}
+            { /* Directory content */}
+            {!files_error && <Paper elevation={0} sx={{
+                width: "100%"
+            }}>
+                <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{
+                                    width: "1px"
+                                }}>Type</TableCell>
+                                <TableCell>Name</TableCell>
+                                {!isMobile && <TableCell align="right">Size</TableCell>}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {files && files!.sort((a, b) => {
+                                if(a.type === "dir" && b.type !== "dir")return -1
+                                if(a.type !== "dir" && b.type === "dir")return 1
+                                return a.name.localeCompare(b.name)
+                            }).map((file, i) => {
+                                const p = `${path}/${file.name}`.replace(/^\/+/g, "/")
+                                return <TableRow
+                                    key={i}
+                                    sx={{
+                                        "&:last-child td, &:last-child th": {
+                                            border: 0
+                                        }
+                                    }}
+                                >
+                                    <TableCell>
+                                        {file.type === "dir" ? <Folder /> : <InsertDriveFileOutlined />}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Link
+                                            to={`/${nip19.npubEncode(owner)}/${name}?path=${p}`}
+                                            component={RouterLink}
+                                        >
+                                            <Typography
+                                                variant="body1"
+                                                fontFamily="'Overpass Mono', monospace"
+                                                sx={{
+                                                    wordBreak: "break-all"
+                                                }}
+                                            >
+                                                {file.name}
+                                            </Typography>
+                                        </Link>
+                                    </TableCell>
+                                    {!isMobile && <TableCell align="right">
+                                        <Typography
+                                            variant="body1"
+                                            fontFamily="'Overpass Mono', monospace"
+                                            sx={{
+                                                wordBreak: "break-all"
+                                            }}
+                                        >
+                                            {file.type !== "dir" && formatFileSize(file.size)}
+                                        </Typography>
+                                    </TableCell>}
+                                </TableRow>
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>}
+
+            { /* File content */}
+            {!file_error && file && <Paper elevation={0} sx={{
+                width: "100%"
+            }}>
+                <FileViewer
+                    file={file}
+                />
+            </Paper>}
+        </Box>
     </Box>
 }
