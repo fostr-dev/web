@@ -15,6 +15,7 @@
   "author": "JeanOUINA",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@rollup/plugin-dynamic-import-vars": "^2.0.3",
     "@types/node": "^17.0.21",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
@@ -23,6 +24,7 @@
     "@typescript-eslint/parser": "^5.22.0",
     "@vitejs/plugin-react": "^3.1.0",
     "eslint": "^8.11.0",
+    "sass": "^1.58.3",
     "typescript": "^4.6.2",
     "vite": "^4.1.4"
   },
@@ -37,6 +39,9 @@
     "buffer": "^6.0.3",
     "csstype": "^3.0.10",
     "fostr": "link:../fostr",
+    "highlight.js": "^11.7.0",
+    "highlightjs-solidity": "^2.0.6",
+    "highlightjs-soliditypp": "github:JeanOUINA/highlightjs-soliditypp",
     "ipfs-http-client": "^60.0.0",
     "nostr-tools": "^1.7.4",
     "react": "^18.2.0",
@@ -45,6 +50,7 @@
     "react-markdown": "^8.0.5",
     "react-router-dom": "^6.8.2",
     "react-swipeable-views": "^0.14.0",
-    "react-swipeable-views-utils": "^0.14.0"
+    "react-swipeable-views-utils": "^0.14.0",
+    "remark-gfm": "^3.0.1"
   }
 }

@@ -39,13 +39,13 @@ export function getFileViewers(filePath:string){
     switch(ext){
         case "md":
             viewers.push(["markdown", "markdown"])
-            viewers.push(["text", "md"])
+            viewers.push(["text", "markdown"])
             break
         case "json":
             viewers.push(["text", "json"])
             break
         case "html":
-            viewers.push(["text", "html"])
+            viewers.push(["text", "xml"])
             break
         case "js":
             viewers.push(["text", "javascript"])
@@ -178,6 +178,12 @@ export function getFileViewers(filePath:string){
             break
         case "vb":
             viewers.push(["text", "vb"])
+            break
+        case "sol":
+            viewers.push(["text", "solidity"])
+            break
+        case "solpp":
+            viewers.push(["text", "soliditypp"])
             break
     }
     if(!viewers.length){

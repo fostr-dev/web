@@ -1,12 +1,15 @@
-import { Box, Tab, Tabs, Typography } from "@mui/material"
+import { Alert, Box, Divider, Tab, Tabs, Typography } from "@mui/material"
 import { useState } from "react"
 import SwipeableViews from "react-swipeable-views"
-import ReactMarkdown from "react-markdown"
+import { CodeHighlighter } from "./CodeHighlighter"
+import { IPFS_URL } from "../ipfs"
+import Markdown from "./Markdown"
 
 export interface File {
     path: string,
     content: string | null,
-    viewers: [string, string][]
+    viewers: [string, string][],
+    too_large: boolean
 }
 
 export default function FileViewer({
@@ -15,7 +18,6 @@ export default function FileViewer({
     file: File
 }){
     const [selectedViewer, setSelectedViewer] = useState(0)
-    const viewer = file.viewers[selectedViewer]
 
     return <Box sx={{}}>
         <Box sx={{
@@ -53,20 +55,66 @@ export function Viewer({
     file: File,
     index: number
 }){
-    switch(file.viewers[index][0]){
+    const viewer = file.viewers[index]
+    switch(viewer[0]){
         case "markdown":
             return <Box sx={{
                 padding: 2,
                 width: "100%",
-                textAlign: "left"
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1
             }}>
                 <Typography variant="h4" fontWeight="bolder">
                     {file.path.split("/").pop()}
                 </Typography>
-                <ReactMarkdown>
-                    {file.content!}
-                </ReactMarkdown>
+                <Divider />
+                {file.too_large ? <Alert variant="filled" severity="error">
+                    File too large to display.
+                </Alert> : <Markdown document={file.content!}/> }
             </Box>
+        case "text":
+            return <Box sx={{
+                padding: 2,
+                width: "100%",
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1
+            }}>
+                <Typography variant="h4" fontWeight="bolder">
+                    {file.path.split("/").pop()}
+                </Typography>
+                <Divider />
+                {file.too_large ? <Alert variant="filled" severity="error">
+                    File too large to display.
+                </Alert> : <CodeHighlighter
+                    language={viewer[1]}
+                    code={file.content!}
+                />}
+            </Box>
+        case "image": {
+            const link = `${IPFS_URL}/ipfs/${file.path}`
+            return <Box sx={{
+                padding: 2,
+                width: "100%",
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1
+            }}>
+                <Typography variant="h4" fontWeight="bolder">
+                    {file.path.split("/").pop()}
+                </Typography>
+                <Divider />
+                <img src={link} alt={file.path} style={{
+                    width: "100%",
+                    height: "auto"
+                }} />
+            </Box>
+        }
+
     }
 
     return null

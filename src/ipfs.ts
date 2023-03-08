@@ -1,7 +1,7 @@
 import { create } from "ipfs-http-client"
 
-export const IPFS_URL = "https://dweb.link/api/v0"
+export const IPFS_URL = "https://dweb.link"
 
 export default create({
-    url: IPFS_URL
+    url: IPFS_URL+"/api/v0"
 })

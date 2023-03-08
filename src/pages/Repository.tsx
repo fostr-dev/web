@@ -101,10 +101,8 @@ export default function Repository(){
                 for await (const file of ipfs.ls(`${hash}${path}`)){
                     result.push(file)
                 }
-                if(result.length === 1){
-                    if(!result[0].name){
-                        throw new Error(`IPFS Hash ${hash} is not a directory`)
-                    }
+                if(!result.find(e => !!e.name)){
+                    throw new Error(`IPFS Hash ${hash} is not a directory`)
                 }
                 return result
             }
@@ -133,13 +131,23 @@ export default function Repository(){
                 }
                 const viewers = getFileViewers(p)
                 let content = null
+                let tooLarge = false
                 if(viewers.find(
                     e => e[0] === "text" ||
                         e[0] === "markdown"
                 )){
-                    const result = []
+                    let result = []
+                    let totalSize = 0
                     for await (const chunk of ipfs.cat(p)){
                         result.push(chunk)
+                        totalSize += chunk.length
+
+                        // limit to 1MB
+                        if(totalSize > 1024 * 1024){
+                            result = []
+                            tooLarge = true
+                            break
+                        }
                     }
                     
                     content = new TextDecoder().decode(Buffer.concat(result))
@@ -147,7 +155,8 @@ export default function Repository(){
                 return {
                     path: p,
                     viewers,
-                    content
+                    content,
+                    too_large: tooLarge
                 } as File
             }
         }
