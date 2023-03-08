@@ -19,6 +19,7 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
         // Doesn't like my screenshot uploader
         "no-irregular-whitespace": "off",
         "no-self-assign": "off",
