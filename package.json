@@ -41,8 +41,11 @@
     "highlight.js": "^11.7.0",
     "highlightjs-solidity": "^2.0.6",
     "highlightjs-soliditypp": "github:JeanOUINA/highlightjs-soliditypp",
+    "i": "^0.3.7",
     "ipfs-http-client": "^60.0.0",
+    "katex": "^0.16.4",
     "nostr-tools": "^1.7.4",
+    "pnpm": "^7.29.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
@@ -50,6 +53,10 @@
     "react-router-dom": "^6.8.2",
     "react-swipeable-views": "^0.14.0",
     "react-swipeable-views-utils": "^0.14.0",
-    "remark-gfm": "^3.0.1"
+    "rehype-katex": "^6.0.2",
+    "rehype-raw": "^6.1.1",
+    "rehype-sanitize": "^5.0.1",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1"
   }
 }

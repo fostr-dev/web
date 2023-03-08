@@ -79,7 +79,10 @@ export function Viewer({
                 <Divider />
                 {file.too_large ? <Alert variant="filled" severity="error">
                     File too large to display.
-                </Alert> : <Markdown document={file.content!}/> }
+                </Alert> : <Markdown
+                    document={file.content!}
+                    relative_path={`${IPFS_URL}/ipfs/${file.path.split("/").slice(0, -1).join("/")}`}
+                /> }
             </Box>
         case "text":
             return <Box sx={{

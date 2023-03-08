@@ -2,11 +2,19 @@ import { Box, Link } from "@mui/material"
 import { CodeHighlighter } from "./CodeHighlighter"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
+import rehypeSanitize from "rehype-sanitize"
+import rehypeRaw from "rehype-raw"
+
+import "katex/dist/katex.min.css"
 
 export default function Markdown({
-    document
+    document,
+    relative_path
 }:{
-    document: string
+    document: string,
+    relative_path: string
 }){
     return <Box sx={{
         "pre > pre": {
@@ -33,9 +41,28 @@ export default function Markdown({
                     >
                         {children}
                     </Link>
+                },
+                img({src, alt}){
+                    if(!src){
+                        return null
+                    }
+                    try{
+                        new URL(src!)
+                        return <img
+                            src={src}
+                            alt={alt}
+                        />
+                    }catch{
+                        // we might have a relative path
+                        return <img
+                            src={`${relative_path}/${src.replace(/^\.?\//, "")}`}
+                            alt={alt}
+                        />
+                    }
                 }
             }}
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex, rehypeRaw, rehypeSanitize]}
         >
             {document}
         </ReactMarkdown>
