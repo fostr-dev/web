@@ -37,6 +37,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: fe8ac812a2141ac30b230d67ebaa28ad
           projectName: fostr
-          directory: /dist
+          directory: ./dist
           # Optional: Enable this if you want to have GitHub Deployments triggered
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
