@@ -112,9 +112,9 @@ export default function Login(){
                                 pubkey: getPublicKey(data),
                                 created_at: Math.floor(Date.now() / 1000),
                                 tags: [
-                                    ["b", "tornado-cash"]
+                                    ["b", "nano-node"]
                                 ],
-                                content: "ipfs://QmU3j1B1UagFbfqgwWBu3yk1La657y8hoGoA24fG3QpPjf",
+                                content: "ipfs://QmSUNRsMLUozMCfMeK67jVTnx1nExnYUPRtWWorgdMesmW",
                             } as any
                             event.id = getEventHash(event)
                             event.sig = signEvent(event, data)

@@ -19,7 +19,6 @@ specifiers:
   buffer: ^6.0.3
   csstype: ^3.0.10
   eslint: ^8.11.0
-  fostr: link:../fostr
   highlight.js: ^11.7.0
   highlightjs-solidity: ^2.0.6
   highlightjs-soliditypp: github:JeanOUINA/highlightjs-soliditypp
@@ -47,7 +46,6 @@ dependencies:
   '@mui/material': 5.11.12_xqeqsl5kvjjtyxwyi3jhw3yuli
   buffer: 6.0.3
   csstype: 3.1.1
-  fostr: link:../fostr
   highlight.js: 11.7.0
   highlightjs-solidity: 2.0.6
   highlightjs-soliditypp: github.com/JeanOUINA/highlightjs-soliditypp/b8e9ee0465c9b79f5a3315091aa083ac3fb71bb3
