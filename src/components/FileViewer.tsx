@@ -4,6 +4,7 @@ import SwipeableViews from "react-swipeable-views"
 import { CodeHighlighter } from "./CodeHighlighter"
 import { IPFS_URL } from "../ipfs"
 import Markdown from "./Markdown"
+import { firstLetterUppercase } from "../utils"
 
 export interface File {
     path: string,
@@ -32,7 +33,13 @@ export default function FileViewer({
                 }}
             >
                 {file.viewers.map((viewer, index) => {
-                    return <Tab label={viewer[0] === "text" ? `Code (${viewer[1]})` : viewer[0]} key={index} />
+                    return <Tab
+                        label={viewer[0] === "text" ? `Code (${viewer[1]})` : firstLetterUppercase(viewer[0])}
+                        key={index}
+                        sx={{
+                            textTransform: "none"
+                        }}
+                    />
                 })}
             </Tabs>
         </Box>

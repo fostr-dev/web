@@ -198,3 +198,6 @@ export function getFileViewers(filePath:string){
     }
     return viewers
 }
+export function firstLetterUppercase(str:string){
+    return str[0].toUpperCase() + str.slice(1)
+}
