@@ -97,6 +97,7 @@ export function getFileViewers(filePath:string){
         case "toml":
         case "conf":
         case "config":
+        case "service":
         case "env":
             viewers.push(["text", "ini"])
             break
