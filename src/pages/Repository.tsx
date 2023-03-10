@@ -22,7 +22,7 @@ export default function Repository(){
         owner: string
         name: string
     }>()
-    const [searchParams, setSearchParams] = useSearchParams({
+    const [searchParams] = useSearchParams({
         path: "/"
     })
     const path = useMemo(() => {

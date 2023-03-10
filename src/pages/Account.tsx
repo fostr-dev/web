@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Card, Chip, CircularProgress, Grid, Link, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Card, Chip, CircularProgress, Grid, Link, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -121,10 +121,11 @@ export default function Account(){
         </Typography>}
         {profile?.nip05 && <Chip label={profile.nip05}/>}
         <Avatar alt={name || display_account} src={profile?.picture} sx={{
-            maxWidth: 250,
+            maxWidth: "50%",
             maxHeight: 250,
-            width: "50%",
-            height: "auto"
+            width: "auto",
+            height: "auto",
+            aspectRatio: "1/1"
         }} />
 
         <Typography variant="h5" fontWeight="bolder">
@@ -133,6 +134,9 @@ export default function Account(){
         {repositories_loaded && repositories_error && <Typography variant="body1">
             Error loading repositories: {repositories_error.message}
         </Typography>}
+        {repositories_loaded && !repositories?.length && <Alert severity="warning">
+            This user does not own any repository.
+        </Alert>}
         {repositories_loaded && !repositories_error && repositories && <Grid container spacing={2} sx={{
             width: "100%",
             justifyContent: "center"

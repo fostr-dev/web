@@ -3,7 +3,7 @@ import { nip19 } from "nostr-tools"
 export function truncatePublicKey(publicKey:string):string | null{
     // npub+bech32 format
     if(publicKey.startsWith("npub")){
-        return publicKey.slice(0, 14) + "..." + publicKey.slice(-10)
+        return publicKey.slice(0, 9) + "..." + publicKey.slice(-5)
     }else if(/^[0-9a-f]{64}$/i.test(publicKey)){
         return truncatePublicKey(nip19.npubEncode(publicKey))
     }
