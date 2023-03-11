@@ -4,7 +4,7 @@ export const IPFS_URL = "https://node-ipfs.thomiz.dev"
 export const EMPTY_DIRECTORY_IPFS_CID = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
 
 export default create({
-    url: IPFS_URL+"/api/v0"
+    url: "https://node-ipfs.thomiz.dev/5001/api/v0",
 })
 
 export async function ls(cid: string) {
@@ -21,15 +21,14 @@ export async function ls(cid: string) {
     })
 }
 
-function typeOf (link:any) {
+function typeOf(link: any) {
     switch (link.Type) {
-      case 1:
-      case 5:
-        return "dir"
-      case 2:
-        return "file"
-      default:
-        return "file"
+        case 1:
+        case 5:
+            return "dir"
+        case 2:
+            return "file"
+        default:
+            return "file"
     }
-  }
-  
+}

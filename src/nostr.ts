@@ -87,9 +87,7 @@ export async function publishRevision(repository:string, dataLink: string){
         pub.on("ok", () => {
             responses++
             publishedOnce = true
-            if(responses === relays.length){
-                resolve(event)
-            }
+            resolve(event)
         })
     })
 }
