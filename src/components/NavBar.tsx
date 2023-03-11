@@ -1,4 +1,5 @@
-import { AppBar, Box, Button, Link, Toolbar } from "@mui/material";
+import { Add } from "@mui/icons-material";
+import { AppBar, Box, Button, IconButton, Link, Toolbar } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import useNip05 from "../hooks/useNip05";
@@ -46,6 +47,12 @@ export default function NavBar() {
             <Box sx={{
                 flexGrow: 1
             }} />
+
+            <Link component={RouterLink} to="/new">
+                <IconButton>
+                    <Add/>
+                </IconButton>
+            </Link>
 
             {AccountStore.privateKey ? <Link
                 component={RouterLink}

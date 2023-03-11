@@ -16,6 +16,7 @@ export default function AccountRedirect(){
     if(!account)return <ErrorPage
         title="You are not logged in"
         reason="You need to be logged in to view your account"
+        showLogin
     />
 
     return null

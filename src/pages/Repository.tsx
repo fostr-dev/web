@@ -7,7 +7,7 @@ import FileViewer, { File } from "../components/FileViewer";
 import useIsMobile from "../hooks/useIsMobile";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
-import ipfs from "../ipfs";
+import ipfs, { ls } from "../ipfs";
 import { fetchEventsByAuthorAndRepository } from "../nostr";
 import { formatFileSize, getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
@@ -98,8 +98,12 @@ export default function Repository(){
             case "ipfs:": {
                 const hash = url.pathname.slice(2) // remove leading slash
                 const result = []
-                for await (const file of ipfs.ls(`${hash}${path}`)){
+                const res = await ls(`${hash}${path}`)
+                for(const file of res){
                     result.push(file)
+                }
+                if(!result.length){
+                    return []
                 }
                 if(!result.find(e => !!e.name)){
                     throw new Error(`IPFS Hash ${hash} is not a directory`)

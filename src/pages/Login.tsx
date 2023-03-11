@@ -1,12 +1,11 @@
 import { Box, Button, Card, Checkbox, FormControlLabel, TextField, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { nip19, generatePrivateKey/*, getPublicKey, getEventHash, signEvent*/ } from "nostr-tools";
+import { nip19, generatePrivateKey } from "nostr-tools";
 import { useLocation, useNavigate } from "react-router-dom";
 import AccountStore from "../stores/AccountStore";
 import SwipeableViews from "react-swipeable-views";
 import CopyTextField from "../components/CopyTextField";
 import useTitle from "../hooks/useTitle";
-//import { pool, relays } from "../nostr";
 
 export default function Login(){
     useTitle("Login")
@@ -36,7 +35,6 @@ export default function Login(){
             navigate(location.state?.redirect ?? "/")
         }
     }, [])
-
 
     return <Box sx={{
         minHeight: "var(--app-height)",
@@ -106,21 +104,6 @@ export default function Login(){
                                 key: data
                             }
                             navigate(location.state?.redirect ?? "/account")
-
-                            /*const event = {
-                                kind: 96,
-                                pubkey: getPublicKey(data),
-                                created_at: Math.floor(Date.now() / 1000),
-                                tags: [
-                                    ["b", "nano-node"]
-                                ],
-                                content: "ipfs://QmSUNRsMLUozMCfMeK67jVTnx1nExnYUPRtWWorgdMesmW",
-                            } as any
-                            event.id = getEventHash(event)
-                            event.sig = signEvent(event, data)
-                            
-                            pool.publish(relays, event)
-                            console.log(event)*/
                         }}
                     >
                         Login

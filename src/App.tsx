@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Repository from "./pages/Repository";
 import Account from "./pages/Account";
 import AccountRedirect from "./pages/AccountRedirect";
+import NewRepository from "./pages/NewRepository";
 
 function App() {
     return <ThemeProvider theme={dark}>
@@ -26,7 +27,8 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/account" element={<AccountRedirect />} />
-                    
+                    <Route path="/new" element={<NewRepository />} />
+
                     <Route path="/:owner/:name" element={<Repository />} />
                     <Route path="/:account" element={<Account />} />
                 </Routes>
