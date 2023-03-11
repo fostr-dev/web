@@ -17,9 +17,7 @@ import { File } from "../components/FileViewer";
 export default function RepositoryFileEditor(){
     const isMobile = useIsMobile()
     const monaco = useMonaco()
-    useEffect(() => {
-        monaco?.editor?.defineTheme("custom", editor_theme as any)
-    }, [])
+    monaco?.editor?.defineTheme("custom", editor_theme as any)
     const {
         owner: owner_raw,
         name: name_raw
