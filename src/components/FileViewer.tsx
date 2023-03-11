@@ -5,7 +5,8 @@ import { CodeHighlighter } from "./CodeHighlighter"
 import { IPFS_URL } from "../ipfs"
 import Markdown from "./Markdown"
 import { firstLetterUppercase } from "../utils"
-import { Download, RawOn } from "@mui/icons-material"
+import { Create, Download, RawOn } from "@mui/icons-material"
+import { Link as RouterLink } from "react-router-dom"
 
 export interface File {
     path: string,
@@ -15,9 +16,13 @@ export interface File {
 }
 
 export default function FileViewer({
-    file
+    file,
+    show_edit_button = false,
+    edit_path
 }:{
-    file: File
+    file: File,
+    show_edit_button?: boolean,
+    edit_path?: string
 }){
     const [selectedViewer, setSelectedViewer] = useState(0)
 
@@ -69,6 +74,14 @@ export default function FileViewer({
                         <Box sx={{
                             flexGrow: 1
                         }}/>
+                        {show_edit_button && <Link
+                            to={edit_path!}
+                            component={RouterLink}
+                        >
+                            <IconButton>
+                                <Create />
+                            </IconButton>
+                        </Link>}
                         <Link
                             href={`${IPFS_URL}/ipfs/${file.path}`}
                             target="_blank"

@@ -197,10 +197,8 @@ export default function NewRepository(){
                                 })
                                 let cid = null
                                 for await(const file of result){
-                                    console.log(file)
                                     if(file.path === ""){
                                         cid = file.cid.toV0()
-                                        break
                                     }
                                 }
                                 if(!cid){

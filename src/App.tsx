@@ -8,6 +8,7 @@ import Repository from "./pages/Repository";
 import Account from "./pages/Account";
 import AccountRedirect from "./pages/AccountRedirect";
 import NewRepository from "./pages/NewRepository";
+import RepositoryFileEditor from "./pages/RepositoryFileEditor";
 
 function App() {
     return <ThemeProvider theme={dark}>
@@ -30,6 +31,7 @@ function App() {
                     <Route path="/new" element={<NewRepository />} />
 
                     <Route path="/:owner/:name" element={<Repository />} />
+                    <Route path="/:owner/:name/edit" element={<RepositoryFileEditor />} />
                     <Route path="/:account" element={<Account />} />
                 </Routes>
             </HashRouter>

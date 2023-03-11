@@ -1,21 +1,25 @@
-import { Folder, InsertDriveFileOutlined } from "@mui/icons-material";
-import { Box, Divider, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Card, Divider, Link, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
-import { Fragment, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
-import FileViewer, { File } from "../components/FileViewer";
 import useIsMobile from "../hooks/useIsMobile";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
 import ipfs, { ls } from "../ipfs";
 import { fetchEventsByAuthorAndRepository } from "../nostr";
-import AccountStore from "../stores/AccountStore";
-import { formatFileSize, getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
+import { getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
 import LoadingPage from "./LoadingPage";
+import Editor, { useMonaco } from "@monaco-editor/react"
+import editor_theme from "monaco-themes/themes/Brilliance Dull.json"
+import { File } from "../components/FileViewer";
 
-export default function Repository(){
+export default function RepositoryFileEditor(){
     const isMobile = useIsMobile()
+    const monaco = useMonaco()
+    useEffect(() => {
+        monaco?.editor?.defineTheme("custom", editor_theme as any)
+    }, [])
     const {
         owner: owner_raw,
         name: name_raw
@@ -94,6 +98,7 @@ export default function Repository(){
         files_error
     ] = usePromise(async () => {
         if(!lastCommit)return null
+        if(isMobile)return null
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
@@ -113,13 +118,14 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path])
+    }, [lastCommit?.content, path, isMobile])
     const [
         file_loaded,
         file,
         file_error
     ] = usePromise<File>(async () => {
         if(!lastCommit)return null
+        if(isMobile)return null
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
@@ -166,7 +172,7 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path, files_loaded, files])
+    }, [lastCommit?.content, path, files_loaded, files, isMobile])
 
     if(!owner)return <ErrorPage
         title="Invalid repository"
@@ -182,9 +188,13 @@ export default function Repository(){
         title="Failed to load repository"
         reason={events_error.message}
     />
-    if(files_error && file_error)return <ErrorPage
-        title="Failed to load repository"
-        reason={files_error.message+"\n"+file_error.message}
+    if(isMobile)return <ErrorPage
+        title="Mobile not supported"
+        reason="File Editor is not supported on mobile devices"
+    />
+    if(file_error)return <ErrorPage
+        title="Failed to load file"
+        reason={file_error.message}
     />
     if(!lastCommit)return <ErrorPage
         title="Repository not found"
@@ -256,7 +266,7 @@ export default function Repository(){
 
         <Box sx={{
             width: "100%",
-            maxWidth: "1200px",
+            //maxWidth: "1200px",
             display: "flex",
             flexDirection: "column",
             gap: 2,
@@ -296,92 +306,34 @@ export default function Repository(){
                                         {p}
                                     </Typography>
                                 </Link>
-                                <Typography variant="body1" color="grey">
+                                {i !== arr.length - 1 && <Typography variant="body1" color="grey">
                                     /
-                                </Typography>
+                                </Typography>}
                             </Fragment>
                         })
                     }
                 </Box>
             </Box>
 
-            { /* Directory content */}
-            {!files_error && files?.length && <Paper elevation={0} sx={{
-                width: "100%"
-            }}>
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{
-                                    width: "1px"
-                                }}>Type</TableCell>
-                                <TableCell>Name</TableCell>
-                                {!isMobile && <TableCell align="right">Size</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {files && files!.sort((a, b) => {
-                                if(a.type === "dir" && b.type !== "dir")return -1
-                                if(a.type !== "dir" && b.type === "dir")return 1
-                                return a.name.localeCompare(b.name)
-                            }).map((file, i) => {
-                                const p = `${path}/${file.name}`.replace(/^\/+/g, "/")
-                                return <TableRow
-                                    key={i}
-                                    sx={{
-                                        "&:last-child td, &:last-child th": {
-                                            border: 0
-                                        }
-                                    }}
-                                >
-                                    <TableCell>
-                                        {file.type === "dir" ? <Folder /> : <InsertDriveFileOutlined />}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Link
-                                            to={`/${nip19.npubEncode(owner)}/${name}?path=${p}`}
-                                            component={RouterLink}
-                                        >
-                                            <Typography
-                                                variant="body1"
-                                                fontFamily="'Overpass Mono', monospace"
-                                                sx={{
-                                                    wordBreak: "break-all"
-                                                }}
-                                            >
-                                                {file.name}
-                                            </Typography>
-                                        </Link>
-                                    </TableCell>
-                                    {!isMobile && <TableCell align="right">
-                                        <Typography
-                                            variant="body1"
-                                            fontFamily="'Overpass Mono', monospace"
-                                            sx={{
-                                                wordBreak: "break-all"
-                                            }}
-                                        >
-                                            {file.type !== "dir" && formatFileSize(file.size)}
-                                        </Typography>
-                                    </TableCell>}
-                                </TableRow>
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper> || null}
-
-            { /* File content */}
-            {!file_error && file && <Paper elevation={0} sx={{
-                width: "100%"
-            }}>
-                <FileViewer
-                    file={file}
-                    show_edit_button={AccountStore.publicKey === owner}
-                    edit_path={`/${nip19.npubEncode(owner)}/${name}/edit?path=${file.path.split("/").slice(1).join("/")}`}
-                />
-            </Paper>}
+            <Divider sx={{
+                width: "100%",
+            }} />
         </Box>
+
+        { /* File editor */}
+        {file && <Box sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            alignItems: "center"
+        }}>
+            <Editor
+                defaultValue={file.content! || ""}
+                language={file.viewers.find(e => e[0] === "text")?.[1] || "plaintext"}
+                height="calc(var(--app-height) - 200px)"
+                theme="custom"
+            />
+        </Box>}
     </Box>
 }
