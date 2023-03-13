@@ -32,7 +32,8 @@ export default function FileCreationModal({
             flexDirection: "column",
             gap: 2,
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            height: "100%"
         }}>
             <Typography variant="h4" fontWeight="bolder">
                 File Name
@@ -44,35 +45,49 @@ export default function FileCreationModal({
                 placeholder="e.g. index.html"
                 fullWidth
             />
+            <Box sx={{
+                flex: 1
+            }}/>
             {filename && <Typography variant="body2">
                 Your file will be saved as <span style={{
                     fontFamily: "'Overpass Mono', monospace",
                 }}>{path}{filename}</span>
             </Typography>}
-            <Button
-                onClick={() => {
-                    setView("upload")
-                }}
-                color="secondary"
-                variant="contained"
-                disabled={!filename || buttonLoading}
-                fullWidth
-            >
-                Upload File
-            </Button>
-            <LoadingButton
-                onClick={() => {
-                    onCreation(filename)
-                    setButtonLoading(true)
-                }}
-                color="primary"
-                variant="contained"
-                disabled={!filename}
-                loading={buttonLoading}
-                fullWidth
-            >
-                Edit File in Editor
-            </LoadingButton>
+            <Box sx={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 2,
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+
+                "& > *": {
+                    width: "100%"
+                }
+            }}>
+                <Button
+                    onClick={() => {
+                        setView("upload")
+                    }}
+                    color="secondary"
+                    variant="contained"
+                    disabled={!filename || buttonLoading}
+                >
+                    Upload File
+                </Button>
+                <LoadingButton
+                    onClick={() => {
+                        onCreation(filename)
+                        setButtonLoading(true)
+                    }}
+                    color="primary"
+                    variant="contained"
+                    disabled={!filename}
+                    loading={buttonLoading}
+                >
+                    Open in Editor
+                </LoadingButton>
+            </Box>
         </Box>
 
         <Box sx={{
