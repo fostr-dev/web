@@ -1,23 +1,42 @@
-import { Box, Card, Divider, Link, Typography } from "@mui/material";
+import { Box, Button, Divider, Link, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
-import { Fragment, useEffect, useMemo } from "react";
-import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
+import { Fragment, useMemo, useRef, useState } from "react";
+import { useParams, useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import useIsMobile from "../hooks/useIsMobile";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
-import ipfs, { ls } from "../ipfs";
-import { fetchEventsByAuthorAndRepository } from "../nostr";
+import ipfs, { ls, makeTree, updateTree } from "../ipfs";
+import { fetchEventsByAuthorAndRepository, publishRevision } from "../nostr";
 import { getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
 import LoadingPage from "./LoadingPage";
 import Editor, { useMonaco } from "@monaco-editor/react"
 import editor_theme from "monaco-themes/themes/Brilliance Dull.json"
 import { File } from "../components/FileViewer";
+import { LoadingButton } from "@mui/lab";
+import { toast } from "react-hot-toast";
+import Modal from "../components/Modal";
+import CommitMessageModal from "../modals/CommitMessageModal";
+import usePreventExit from "../hooks/usePreventExit";
 
 export default function RepositoryFileEditor(){
     const isMobile = useIsMobile()
     const monaco = useMonaco()
+    const navigate = useNavigate()
     monaco?.editor?.defineTheme("custom", editor_theme as any)
+    const editorRef = useRef<any>(null);
+    usePreventExit("You may have unsaved changes. Are you sure you want to leave?")
+
+    function handleEditorDidMount(editor:any) {
+        // here is the editor instance
+        // you can store it in `useRef` for further usage
+        editorRef.current = editor; 
+    }
+    const [commitButtonLoading, setCommitButtonLoading] = useState(false)
+    const [commitMessageModalOpen, setCommitMessageModalOpen] = useState(false)
+    const [commitMessageModalCallback, setCommitMessageModalCallback] = useState<(message?: string) => void>(() => () => {})
+    const [commitMessageModalCancelCallback, setCommitMessageModalCancelCallback] = useState<() => void>(() => () => {})
+
     const {
         owner: owner_raw,
         name: name_raw
@@ -93,7 +112,7 @@ export default function RepositoryFileEditor(){
     const [
         files_loaded,
         files,
-        files_error
+        //files_error
     ] = usePromise(async () => {
         if(!lastCommit)return null
         if(isMobile)return null
@@ -283,7 +302,8 @@ export default function RepositoryFileEditor(){
                 <Box sx={{
                     display: "flex",
                     flexDirection: "row",
-                    gap: 1
+                    gap: 1,
+                    flex: 1
                 }}>
                     {
                         [".", ...path.split("/")].map((p, i, arr) => {
@@ -311,7 +331,98 @@ export default function RepositoryFileEditor(){
                         })
                     }
                 </Box>
+
+                { /* Commit button */}
+                <Button
+                    variant="contained" 
+                    color="error"
+                    onClick={() => {
+                        navigate(`/${nip19.npubEncode(owner)}/${name}?path=${path}`)
+                    }}
+                    disabled={commitButtonLoading}
+                >
+                    Discard
+                </Button>
+                <LoadingButton
+                    variant="contained"
+                    color="success"
+                    loading={commitButtonLoading}
+                    onClick={async () => {
+                        setCommitButtonLoading(true)
+                        let resolve:(message?:string) => void
+                        let reject:(error:Error) => void
+
+                        const promise = new Promise<string|undefined>((res, rej) => (resolve = res, reject = rej))
+                        setCommitMessageModalCallback(() => resolve)
+                        setCommitMessageModalCancelCallback(() => reject)
+                        setCommitMessageModalOpen(true)
+                        const message = await promise
+                            .catch(error => {
+                                setCommitButtonLoading(false)
+                                setCommitMessageModalOpen(false)
+                                throw error
+                            })
+                        setCommitMessageModalOpen(false)
+
+                        const promise2 = (async () => {
+                            const [
+                                result,
+                                root_hash
+                            ] = await Promise.all([
+                                ipfs.add({
+                                    content: new TextEncoder()
+                                        .encode(editorRef.current?.getValue() || "")
+                                }),
+                                fetchEventsByAuthorAndRepository(owner, name)
+                                .then(events => events.find(event => {
+                                    if(event.tags.find(t => t[0] === "p"))return false
+                                    try{
+                                        const url = new URL(event.content)
+                                        if(!VALIDE_FILE_URL_SCHEME.has(url.protocol))return false
+                                    }catch{
+                                        return false
+                                    }
+                                    
+                                    return true
+                                })).then(event => event!.content.split("://")[1])
+                            ])
+                            const cid = result.cid.toString()
+                            const tree = await makeTree(root_hash!, path)
+                            tree[path] = cid
+                            const new_root = await updateTree(ipfs, tree, path)
+                            
+                            await publishRevision(
+                                name,
+                                `ipfs://${new_root}`,
+                                message
+                            )
+                        })()
+                        toast.promise(
+                            promise2,
+                            {
+                                loading: "Saving and committing...",
+                                success: "Saved and commited",
+                                error: "Failed to save and commit"
+                            }
+                        )
+                        await promise
+                        setCommitButtonLoading(false)
+                    }}
+                >
+                    Save And Commit
+                </LoadingButton>
             </Box>
+
+            <Modal
+                open={commitMessageModalOpen}
+                onClose={() => {}}
+            >
+                <CommitMessageModal
+                    onCloseWithoutMessage={commitMessageModalCallback}
+                    onCommit={commitMessageModalCallback}
+                    onCancel={commitMessageModalCancelCallback}
+                />
+            </Modal>
 
             <Divider sx={{
                 width: "100%",
@@ -331,6 +442,7 @@ export default function RepositoryFileEditor(){
                 language={file.viewers.find(e => e[0] === "text")?.[1] || "plaintext"}
                 height="calc(var(--app-height) - 200px)"
                 theme="custom"
+                onMount={handleEditorDidMount}
             />
         </Box>}
     </Box>

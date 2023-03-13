@@ -3,9 +3,8 @@ import usePromise from "./usePromise"
 
 export default function useNip05(address: string|undefined) {
     const [
-        ready,
-        nip05,
-        error
+        ,
+        nip05
     ] = usePromise(async () => {
         if(!address)return null
 

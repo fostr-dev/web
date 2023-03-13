@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 import AccountStore from "./stores/AccountStore";
 
 export const pool = new SimplePool()
-export const relays = ["wss://nostr-dev.newstr.io","wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band"]
+export const relays = ["wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band"]
 
 export async function fetchEventsByAuthor(author: string) {
     const events = await pool.list(relays, [
@@ -56,13 +56,14 @@ export async function validateNip05(pubkey:string, name:string):Promise<boolean>
     if(!profile)return false
     return profile.pubkey === pubkey
 }
-export async function publishRevision(repository:string, dataLink: string){
+export async function publishRevision(repository:string, dataLink: string, message?: string){
     const event = {
         kind: 96,
         pubkey: AccountStore.publicKey,
         created_at: Math.floor(Date.now() / 1000),
         tags: [
-            ["b", repository]
+            ["b", repository],
+            ...(message ? [["t", message]] : [])
         ],
         content: dataLink
     } as any

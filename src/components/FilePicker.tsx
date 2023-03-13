@@ -81,7 +81,8 @@ export default function FilePicker(
                         const file = await new Promise<File>((resolve, reject) => {
                             (entry as FileSystemFileEntry).file(resolve, reject)
                         })
-                        files.push(file)
+                        const newfile = new File([file], "/" + file.name, {type: file.type})
+                        files.push(newfile)
                     }else if(entry.isDirectory){
                         await addDirectory(entry as FileSystemDirectoryEntry, "/")
                     }

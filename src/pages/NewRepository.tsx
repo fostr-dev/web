@@ -137,7 +137,8 @@ export default function NewRepository(){
                                     setButtonLoading(true)
                                     const repository = await publishRevision(
                                         repositoryName,
-                                        `ipfs://${EMPTY_DIRECTORY_IPFS_CID}`
+                                        `ipfs://${EMPTY_DIRECTORY_IPFS_CID}`,
+                                        "Initial Commit"
                                     )
                                     console.log(repository)
                                     navigate(`/${account}/${repositoryName}`)
@@ -207,7 +208,8 @@ export default function NewRepository(){
                                 toast("Files uploaded on ipfs")
                                 const repository = await publishRevision(
                                     repositoryName,
-                                    `ipfs://${cid}`
+                                    `ipfs://${cid}`,
+                                    "Initial Commit"
                                 )
                                 console.log(repository)
                                 navigate(`/${account}/${repositoryName}`)

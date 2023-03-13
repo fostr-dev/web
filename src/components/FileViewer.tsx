@@ -145,6 +145,21 @@ export function Viewer({
                 }} />
             </Box>
         }
+        case "video": {
+            const link = `${IPFS_URL}/ipfs/${file.path}`
+            return <Box sx={{
+                width: "100%",
+                height: "100%",
+                alignSelf: "center",
+            }}>
+                <video src={link} style={{
+                    width: "100%",
+                    height: "100%",
+                    maxHeight: "600px",
+                    objectFit: "contain"
+                }} controls />
+            </Box>
+        }
 
     }
 

@@ -1,14 +1,16 @@
-import { Folder, InsertDriveFileOutlined } from "@mui/icons-material";
-import { Box, Divider, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Add, Folder, InsertDriveFileOutlined } from "@mui/icons-material";
+import { Box, Divider, IconButton, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
-import { Fragment, useMemo } from "react";
-import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
+import { Fragment, useMemo, useState } from "react";
+import { useParams, useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import FileViewer, { File } from "../components/FileViewer";
+import Modal from "../components/Modal";
 import useIsMobile from "../hooks/useIsMobile";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
-import ipfs, { ls } from "../ipfs";
-import { fetchEventsByAuthorAndRepository } from "../nostr";
+import ipfs, { EMPTY_FILE_IPFS_CID, ls, makeTree, updateTree } from "../ipfs";
+import FileCreationModal from "../modals/FileCreationModal";
+import { fetchEventsByAuthorAndRepository, publishRevision } from "../nostr";
 import AccountStore from "../stores/AccountStore";
 import { formatFileSize, getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
@@ -16,6 +18,7 @@ import LoadingPage from "./LoadingPage";
 
 export default function Repository(){
     const isMobile = useIsMobile()
+    const [fileCreationModalOpen, setFileCreationModalOpen] = useState(false)
     const {
         owner: owner_raw,
         name: name_raw
@@ -26,6 +29,7 @@ export default function Repository(){
     const [searchParams] = useSearchParams({
         path: "/"
     })
+    const navigate = useNavigate()
     const path = useMemo(() => {
         const p = searchParams.get("path")
         if(!p?.startsWith("/"))return `/${p}`
@@ -275,7 +279,8 @@ export default function Repository(){
                 <Box sx={{
                     display: "flex",
                     flexDirection: "row",
-                    gap: 1
+                    gap: 1,
+                    flex: 1
                 }}>
                     {
                         [".", ...path.split("/")].map((p, i, arr) => {
@@ -303,6 +308,77 @@ export default function Repository(){
                         })
                     }
                 </Box>
+                {!files_error && <IconButton
+                    onClick={() => {
+                        setFileCreationModalOpen(true)
+                    }}
+                >
+                    <Add/>
+                </IconButton>}
+                <Modal open={fileCreationModalOpen} onClose={() => setFileCreationModalOpen(false)}>
+                    <FileCreationModal onCreation={async (filename, buffer) => {
+                        const _path = (path+"/"+filename).replace(/\/+/g, "/")
+                        if(!buffer){
+                            // empty file lol
+                            const rootHash = await fetchEventsByAuthorAndRepository(owner, name)
+                            .then(events => events.find(event => {
+                                if(event.tags.find(t => t[0] === "p"))return false
+                                try{
+                                    const url = new URL(event.content)
+                                    if(!VALIDE_FILE_URL_SCHEME.has(url.protocol))return false
+                                }catch{
+                                    return false
+                                }
+                                
+                                return true
+                            })).then(event => event!.content.split("://")[1])
+                            const tree = await makeTree(rootHash, _path)
+                            tree[_path] = EMPTY_FILE_IPFS_CID
+                            const newRootHash = await updateTree(ipfs, tree, _path)
+
+                            await publishRevision(
+                                name,
+                                `ipfs://${newRootHash}`,
+                                `Create file ${_path}`,
+                            )
+                            
+                            // relays might be a bit slow, avoid errors when reloading
+                            await new Promise(r => setTimeout(r, 2000))
+                            navigate(`/${nip19.npubEncode(owner)}/${name}/edit?path=${_path}`)
+                        }else{
+                            // upload
+                            const result = await ipfs.add({
+                                content: buffer
+                            })
+                            const cid = result.cid.toString()
+                            const rootHash = await fetchEventsByAuthorAndRepository(owner, name)
+                            .then(events => events.find(event => {
+                                if(event.tags.find(t => t[0] === "p"))return false
+                                try{
+                                    const url = new URL(event.content)
+                                    if(!VALIDE_FILE_URL_SCHEME.has(url.protocol))return false
+                                }catch{
+                                    return false
+                                }
+                                
+                                return true
+                            })).then(event => event!.content.split("://")[1])
+                            const tree = await makeTree(rootHash, _path)
+                            tree[_path] = cid
+                            const newRootHash = await updateTree(ipfs, tree, _path)
+
+                            await publishRevision(
+                                name,
+                                `ipfs://${newRootHash}`,
+                                `Added file ${_path} via upload`,
+                            )
+                            // relays might be a bit slow, avoid errors when reloading
+                            await new Promise(r => setTimeout(r, 2000))
+                            navigate(`/${nip19.npubEncode(owner)}/${name}?path=${_path}`)
+                            setFileCreationModalOpen(false)
+                        }
+                    }} path={path}/>
+                </Modal>
             </Box>
 
             { /* Directory content */}
