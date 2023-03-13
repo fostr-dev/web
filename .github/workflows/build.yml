@@ -1,4 +1,9 @@
-on: [push]
+
+name: Cloudflare Pages
+
+on:
+  push:
+    branches: [ master ]
 
 jobs:
   publish:
@@ -40,3 +45,4 @@ jobs:
           directory: ./dist
           # Optional: Enable this if you want to have GitHub Deployments triggered
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
