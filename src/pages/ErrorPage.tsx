@@ -5,11 +5,13 @@ import { Link as RouterLink, useLocation } from "react-router-dom"
 export default function ErrorPage({
     title,
     reason,
-    showLogin = false
+    showLogin = false,
+    onRefresh
 }:{
     title: string
     reason: string
     showLogin?: boolean
+    onRefresh?: () => void
 }){
     const location = useLocation()
     return <Box sx={{
@@ -39,5 +41,13 @@ export default function ErrorPage({
                 Login
             </Button>
         </Link>}
+
+        {onRefresh && <Button
+            variant="contained"
+            color="primary"
+            onClick={onRefresh}
+        >
+            Refresh
+        </Button>}
     </Box>
 }

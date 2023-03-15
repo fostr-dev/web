@@ -8,6 +8,7 @@ import Modal from "../components/Modal";
 import useIsMobile from "../hooks/useIsMobile";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
+import useRefresh from "../hooks/useRefresh";
 import ipfs, { EMPTY_FILE_IPFS_CID, ls, makeTree, updateTree } from "../ipfs";
 import FileCreationModal from "../modals/FileCreationModal";
 import { fetchEventsByAuthorAndRepository, publishRevision } from "../nostr";
@@ -35,6 +36,7 @@ export default function Repository(){
         if(!p?.startsWith("/"))return `/${p}`
         return p
     }, [searchParams])
+    const [refreshId, refresh] = useRefresh()
     
     const owner = useMemo(() => {
         if(!owner_raw)return null
@@ -85,7 +87,7 @@ export default function Repository(){
 
         // only events, made by the owner, counted as commits
         return validEvents
-    }, [owner, name])
+    }, [owner, name, refreshId])
     const lastCommit = useMemo(() => {
         if(!events_loaded)return null
         if(events_error)return null
@@ -117,7 +119,7 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path])
+    }, [lastCommit?.content, path, refreshId])
     const [
         file_loaded,
         file,
@@ -170,7 +172,7 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path, files_loaded, files])
+    }, [lastCommit?.content, path, files_loaded, files, refreshId])
 
     if(!owner)return <ErrorPage
         title="Invalid repository"
@@ -185,14 +187,17 @@ export default function Repository(){
     if(events_error)return <ErrorPage
         title="Failed to load repository"
         reason={events_error.message}
+        onRefresh={refresh}
     />
     if(files_error && file_error)return <ErrorPage
         title="Failed to load repository"
         reason={files_error.message+"\n"+file_error.message}
+        onRefresh={refresh}
     />
     if(!lastCommit)return <ErrorPage
         title="Repository not found"
         reason="The repository does not exist"
+        onRefresh={refresh}
     />
 
     return <Box sx={{
