@@ -26,6 +26,7 @@ function App() {
             <HashRouter>
                 <NavBar/>
                 <Routes>
+                    <Route path="/" element={<AccountRedirect />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/account" element={<AccountRedirect />} />
                     <Route path="/new" element={<NewRepository />} />
