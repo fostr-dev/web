@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 import AccountStore from "./stores/AccountStore";
 
 export const pool = new SimplePool()
-export const relays = ["wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band"]
+export const relays = ["wss://brb.io","wss://eden.nostr.land","wss://relay.damus.io","wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band","wss://offchain.pub"]
 
 export async function fetchEventsByAuthor(author: string) {
     const events = await pool.list(relays, [
