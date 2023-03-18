@@ -3,7 +3,6 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import NavBar from "./components/NavBar";
 import dark from "./themes/dark";
-import Main from "./pages/Main";
 import Login from "./pages/Login";
 import Repository from "./pages/Repository";
 import Account from "./pages/Account";
@@ -27,7 +26,7 @@ function App() {
             <HashRouter>
                 <NavBar/>
                 <Routes>
-                    <Route path="/" element={<Main />} />
+                    <Route path="/" element={<AccountRedirect />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/account" element={<AccountRedirect />} />
                     <Route path="/new" element={<NewRepository />} />
