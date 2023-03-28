@@ -230,7 +230,7 @@ export default function Repository(){
         onRefresh={refresh}
     />
     switch(selectedTabIndex){
-        case RepositoryTab.Issues:
+        case RepositoryTab.Files:
             if(!(file_loaded || files_loaded))return <LoadingPage/>
             if(files_error && file_error)return <ErrorPage
                 title="Failed to load repository"
@@ -238,7 +238,7 @@ export default function Repository(){
                 onRefresh={refresh}
             />
             break
-        case RepositoryTab.Files:
+        case RepositoryTab.Issues:
             if(!issues_loaded)return <LoadingPage/>
             if(issues_error)return <ErrorPage
                 title="Failed to load issues"

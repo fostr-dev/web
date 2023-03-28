@@ -81,6 +81,7 @@ export async function validateNip05(pubkey:string, name:string):Promise<boolean>
 export async function publishEvent(event: Event){
     event.id = getEventHash(event)
     event.sig = signEvent(event, AccountStore.privateKey!.key)
+    console.log(JSON.stringify(event, null, 4))
     
     const pub = pool.publish(relays, event)
     return new Promise<Event>((resolve, reject) => {

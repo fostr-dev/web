@@ -1,4 +1,4 @@
-import { Alert, Box, Card, CircularProgress, Divider, Typography } from "@mui/material";
+import { Alert, Box, Card, CircularProgress, Divider, Link, Typography } from "@mui/material";
 import { Event, nip19 } from "nostr-tools";
 import { useMemo } from "react";
 import useNip05 from "../hooks/useNip05";
@@ -7,6 +7,7 @@ import useRefresh from "../hooks/useRefresh";
 import { fetchEventsByIssue, replyToIssue } from "../nostr";
 import { Viewer } from "./FileViewer";
 import RepositoryIssueEditor from "./RepositoryIssueEditor";
+import { Link as RouterLink } from "react-router-dom";
 
 export function RepositoryIssueComment({
     comment,
@@ -25,14 +26,18 @@ export function RepositoryIssueComment({
         width: "100%",
         padding: 2
     }} variant="outlined">
-        <Typography variant="h6" textAlign="left" sx={{
-            fontWeight: "bold",
-            fontFamily: "'Overpass Mono', monospace",
-            wordBreak: "break-all"
-        }}>
-            {authorName || nip19.npubEncode(comment.pubkey)}
-        </Typography>
-        <Divider />
+        <Link
+            to={`/${nip19.npubEncode(comment.pubkey)}`}
+            component={RouterLink}
+        >
+            <Typography variant="h6" textAlign="left" sx={{
+                fontWeight: "bold",
+                fontFamily: "'Overpass Mono', monospace",
+                wordBreak: "break-all"
+            }}>
+                {authorName || nip19.npubEncode(comment.pubkey)}
+            </Typography>
+        </Link>
         <Typography variant="body1" sx={{
             textAlign: "left"
         }}>
@@ -92,13 +97,18 @@ export default function RepositoryIssue({
             <Typography variant="h4" fontWeight="bolder" textAlign="left">
                 {title}
             </Typography>
-            <Typography variant="h6" textAlign="left" sx={{
-                fontWeight: "bold",
-                fontFamily: "'Overpass Mono', monospace",
-                wordBreak: "break-all"
-            }}>
-                {authorName || nip19.npubEncode(issue.pubkey)}
-            </Typography>
+            <Link
+                to={`/${nip19.npubEncode(issue.pubkey)}`}
+                component={RouterLink}
+            >
+                <Typography variant="h6" textAlign="left" sx={{
+                    fontWeight: "bold",
+                    fontFamily: "'Overpass Mono', monospace",
+                    wordBreak: "break-all"
+                }}>
+                    {authorName || nip19.npubEncode(issue.pubkey)}
+                </Typography>
+            </Link>
             <Divider />
             <Typography variant="body1" sx={{
                 textAlign: "left"

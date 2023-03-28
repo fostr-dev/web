@@ -1,4 +1,4 @@
-import { Add } from "@mui/icons-material"
+import { Add, ArrowBack } from "@mui/icons-material"
 import { Alert, Box, Card, IconButton, Link, Paper, Typography } from "@mui/material"
 import { Event, nip19 } from "nostr-tools"
 import { useNavigate, useParams } from "react-router-dom"
@@ -19,7 +19,6 @@ export function RepositoryIssueCard({
     name: string
 }){
     const nip05 = useNip05(issue.pubkey)
-    console.log(issue)
     return <Card sx={{
         width: "100%",
         display: "flex",
@@ -116,6 +115,9 @@ export default function RepositoryIssues({
             justifyContent: "center",
             width: "100%"
         }}>
+            {id && <IconButton onClick={() => navigate(`/${owner}/${name}/issues`)}>
+                <ArrowBack />
+            </IconButton>}
             <Box sx={{flex: 1}}/>
             <IconButton onClick={() => setNewIssueModalOpen(true)}>
                 <Add />
