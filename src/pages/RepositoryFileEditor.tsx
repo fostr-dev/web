@@ -119,7 +119,7 @@ export default function RepositoryFileEditor(){
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
-                const hash = url.pathname.slice(2) // remove leading slash
+                const hash = lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)?.[1]
                 const result = []
                 const res = await ls(`${hash}${path}`)
                 for(const file of res){
@@ -146,7 +146,8 @@ export default function RepositoryFileEditor(){
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
-                const hash = url.pathname.slice(2) // remove leading slash
+                const hash = lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)?.[1]
+                console.log(lastCommit.content, hash, path)
                 let p = `${hash}${path}`
                 if(files_loaded && files?.length){
                     // see if there's a readme in the dir, and display it

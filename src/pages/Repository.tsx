@@ -1,25 +1,28 @@
-import { Add, Folder, InsertDriveFileOutlined } from "@mui/icons-material";
-import { Box, Divider, IconButton, Link, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Divider, Link, Tab, Tabs, Typography } from "@mui/material";
 import { nip19 } from "nostr-tools";
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
-import FileViewer, { File } from "../components/FileViewer";
-import Modal from "../components/Modal";
-import useIsMobile from "../hooks/useIsMobile";
+import { File } from "../components/FileViewer";
+import RepositoryCodeViewer from "../components/RepositoryCodeViewer";
+import RepositoryIssues from "../components/RepositoryIssues";
 import useNip05 from "../hooks/useNip05";
 import usePromise from "../hooks/usePromise";
 import useRefresh from "../hooks/useRefresh";
-import ipfs, { EMPTY_FILE_IPFS_CID, ls, makeTree, updateTree } from "../ipfs";
-import FileCreationModal from "../modals/FileCreationModal";
-import { fetchEventsByAuthorAndRepository, publishRevision } from "../nostr";
-import AccountStore from "../stores/AccountStore";
-import { formatFileSize, getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
+import ipfs, { ls } from "../ipfs";
+import { fetchEventsByAuthorAndRepository, fetchEventsByRepository } from "../nostr";
+import { getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
 import LoadingPage from "./LoadingPage";
 
+export enum RepositoryTab {
+    Files,
+    Issues,
+    Pulls
+}
+const tabs = ["", "issues", "pulls"] as const
+const tabsNames = ["Code", "Issues", "Pull requests"] as const
 export default function Repository(){
-    const isMobile = useIsMobile()
-    const [fileCreationModalOpen, setFileCreationModalOpen] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false)
     const {
         owner: owner_raw,
         name: name_raw
@@ -30,6 +33,19 @@ export default function Repository(){
     const [searchParams] = useSearchParams({
         path: "/"
     })
+    const {
+        tab
+    } = useParams<{
+        tab: string
+    }>()
+    const selectedTabIndex = useMemo(() => {
+        switch(tab){
+            case "issues": return RepositoryTab.Issues
+            case "pulls": return RepositoryTab.Pulls
+            case "files":
+            default: return RepositoryTab.Files
+        }
+    }, [tab])
     const navigate = useNavigate()
     const path = useMemo(() => {
         const p = searchParams.get("path")
@@ -95,15 +111,33 @@ export default function Repository(){
         return events[0]
     }, [events_loaded, events_error, events])
     const [
+        issues_loaded,
+        issues,
+        issues_error
+    ] = usePromise(async () => {
+        if(selectedTabIndex !== RepositoryTab.Issues)return null
+        if(!owner)return null
+        if(!name)return null
+        const events = await fetchEventsByRepository(owner, name)
+        const validEvents = events.filter(event => {
+            if(!event.tags.find(t => t[0] === "c"))return false
+
+            return true
+        })
+
+        return validEvents
+    }, [owner, name, refreshId, selectedTabIndex])
+    const [
         files_loaded,
         files,
         files_error
     ] = usePromise(async () => {
+        if(selectedTabIndex !== RepositoryTab.Files)return null
         if(!lastCommit)return null
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
-                const hash = url.pathname.slice(2) // remove leading slash
+                const hash = lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)?.[1]
                 const result = []
                 const res = await ls(`${hash}${path}`)
                 for(const file of res){
@@ -119,17 +153,18 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path, refreshId])
+    }, [lastCommit?.content, path, refreshId, selectedTabIndex])
     const [
         file_loaded,
         file,
         file_error
     ] = usePromise<File>(async () => {
+        if(selectedTabIndex !== RepositoryTab.Files)return null
         if(!lastCommit)return null
         const url = new URL(lastCommit.content)
         switch(url.protocol){
             case "ipfs:": {
-                const hash = url.pathname.slice(2) // remove leading slash
+                const hash = lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)?.[1]
                 let p = `${hash}${path}`
                 if(files_loaded && files?.length){
                     // see if there's a readme in the dir, and display it
@@ -172,7 +207,7 @@ export default function Repository(){
             }
         }
         throw new Error(`Unsupported protocol: ${url.protocol}`)
-    }, [lastCommit?.content, path, files_loaded, files, refreshId])
+    }, [lastCommit?.content, path, files_loaded, files, refreshId, selectedTabIndex])
 
     if(!owner)return <ErrorPage
         title="Invalid repository"
@@ -183,15 +218,10 @@ export default function Repository(){
         reason="The repository name is invalid"
     />
 
-    if(!events_loaded || !(file_loaded || files_loaded))return <LoadingPage/>
+    if(!events_loaded)return <LoadingPage/>
     if(events_error)return <ErrorPage
         title="Failed to load repository"
         reason={events_error.message}
-        onRefresh={refresh}
-    />
-    if(files_error && file_error)return <ErrorPage
-        title="Failed to load repository"
-        reason={files_error.message+"\n"+file_error.message}
         onRefresh={refresh}
     />
     if(!lastCommit)return <ErrorPage
@@ -199,6 +229,24 @@ export default function Repository(){
         reason="The repository does not exist"
         onRefresh={refresh}
     />
+    switch(selectedTabIndex){
+        case RepositoryTab.Issues:
+            if(!(file_loaded || files_loaded))return <LoadingPage/>
+            if(files_error && file_error)return <ErrorPage
+                title="Failed to load repository"
+                reason={files_error.message+"\n"+file_error.message}
+                onRefresh={refresh}
+            />
+            break
+        case RepositoryTab.Files:
+            if(!issues_loaded)return <LoadingPage/>
+            if(issues_error)return <ErrorPage
+                title="Failed to load issues"
+                reason={issues_error.message}
+                onRefresh={refresh}
+            />
+            break
+    }
 
     return <Box sx={{
         display: "flex",
@@ -259,210 +307,50 @@ export default function Repository(){
             </Box>
         </Box>
 
-        <Divider sx={{
-            width: "100%",
-        }} />
-
         <Box sx={{
-            width: "100%",
-            maxWidth: "1200px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            alignItems: "center"
+            width: "100%"
         }}>
-            { /* Directory header */}
-            <Box sx={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 1,
-                justifyContent: "start",
-                width: "100%",
-                flexWrap: "wrap"
-            }}>
-                { /* Path */}
-                <Box sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 1,
-                    flex: 1
-                }}>
-                    {
-                        [".", ...path.split("/")].map((p, i, arr) => {
-                            if(!p)return null
-                            const p2 = arr.slice(0, i + 1).slice(1).join("/") || "/"
-                            return <Fragment key={p2}>
-                                <Link
-                                    to={`/${nip19.npubEncode(owner)}/${name}?path=${p2}`}
-                                    component={RouterLink}
-                                >
-                                    <Typography
-                                        variant="body1"
-                                        fontFamily="'Overpass Mono', monospace"
-                                        sx={{
-                                            wordBreak: "break-all"
-                                        }}
-                                    >
-                                        {p}
-                                    </Typography>
-                                </Link>
-                                <Typography variant="body1" color="grey">
-                                    /
-                                </Typography>
-                            </Fragment>
-                        })
-                    }
-                </Box>
-                {!files_error && <IconButton
-                    onClick={() => {
-                        setFileCreationModalOpen(true)
+            <Tabs
+                value={selectedTabIndex}
+                onChange={(_, newValue) => {
+                    navigate(`/${nip19.npubEncode(owner)}/${name}/${tabs[newValue]}`)
+                }}
+            >
+                {tabsNames.map((tab, i) => <Tab
+                    key={i}
+                    label={tab}
+                    value={i}
+                    sx={{
+                        textTransform: "none"
                     }}
-                >
-                    <Add/>
-                </IconButton>}
-                <Modal open={fileCreationModalOpen} onClose={() => setFileCreationModalOpen(false)}>
-                    <FileCreationModal onCreation={async (filename, buffer) => {
-                        const _path = (path+"/"+filename).replace(/\/+/g, "/")
-                        if(!buffer){
-                            // empty file lol
-                            const rootHash = await fetchEventsByAuthorAndRepository(owner, name)
-                            .then(events => events.find(event => {
-                                if(event.tags.find(t => t[0] === "p"))return false
-                                try{
-                                    const url = new URL(event.content)
-                                    if(!VALIDE_FILE_URL_SCHEME.has(url.protocol))return false
-                                }catch{
-                                    return false
-                                }
-                                
-                                return true
-                            })).then(event => event!.content.split("://")[1])
-                            const tree = await makeTree(rootHash, _path)
-                            tree[_path] = EMPTY_FILE_IPFS_CID
-                            const newRootHash = await updateTree(ipfs, tree, _path)
+                />)}
+            </Tabs>
 
-                            await publishRevision(
-                                name,
-                                `ipfs://${newRootHash}`,
-                                `Create file ${_path}`,
-                            )
-                            
-                            // relays might be a bit slow, avoid errors when reloading
-                            await new Promise(r => setTimeout(r, 2000))
-                            navigate(`/${nip19.npubEncode(owner)}/${name}/edit?path=${_path}`)
-                        }else{
-                            // upload
-                            const result = await ipfs.add({
-                                content: buffer
-                            })
-                            const cid = result.cid.toString()
-                            const rootHash = await fetchEventsByAuthorAndRepository(owner, name)
-                            .then(events => events.find(event => {
-                                if(event.tags.find(t => t[0] === "p"))return false
-                                try{
-                                    const url = new URL(event.content)
-                                    if(!VALIDE_FILE_URL_SCHEME.has(url.protocol))return false
-                                }catch{
-                                    return false
-                                }
-                                
-                                return true
-                            })).then(event => event!.content.split("://")[1])
-                            const tree = await makeTree(rootHash, _path)
-                            tree[_path] = cid
-                            const newRootHash = await updateTree(ipfs, tree, _path)
-
-                            await publishRevision(
-                                name,
-                                `ipfs://${newRootHash}`,
-                                `Added file ${_path} via upload`,
-                            )
-                            // relays might be a bit slow, avoid errors when reloading
-                            await new Promise(r => setTimeout(r, 2000))
-                            navigate(`/${nip19.npubEncode(owner)}/${name}?path=${_path}`)
-                            setFileCreationModalOpen(false)
-                        }
-                    }} path={path}/>
-                </Modal>
-            </Box>
-
-            { /* Directory content */}
-            {!files_error && files?.length && <Paper elevation={0} sx={{
-                width: "100%"
-            }}>
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{
-                                    width: "1px"
-                                }}>Type</TableCell>
-                                <TableCell>Name</TableCell>
-                                {!isMobile && <TableCell align="right">Size</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {files && files!.sort((a, b) => {
-                                if(a.type === "dir" && b.type !== "dir")return -1
-                                if(a.type !== "dir" && b.type === "dir")return 1
-                                return a.name.localeCompare(b.name)
-                            }).map((file, i) => {
-                                const p = `${path}/${file.name}`.replace(/^\/+/g, "/")
-                                return <TableRow
-                                    key={i}
-                                    sx={{
-                                        "&:last-child td, &:last-child th": {
-                                            border: 0
-                                        }
-                                    }}
-                                >
-                                    <TableCell>
-                                        {file.type === "dir" ? <Folder /> : <InsertDriveFileOutlined />}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Link
-                                            to={`/${nip19.npubEncode(owner)}/${name}?path=${p}`}
-                                            component={RouterLink}
-                                        >
-                                            <Typography
-                                                variant="body1"
-                                                fontFamily="'Overpass Mono', monospace"
-                                                sx={{
-                                                    wordBreak: "break-all"
-                                                }}
-                                            >
-                                                {file.name}
-                                            </Typography>
-                                        </Link>
-                                    </TableCell>
-                                    {!isMobile && <TableCell align="right">
-                                        <Typography
-                                            variant="body1"
-                                            fontFamily="'Overpass Mono', monospace"
-                                            sx={{
-                                                wordBreak: "break-all"
-                                            }}
-                                        >
-                                            {file.type !== "dir" && formatFileSize(file.size)}
-                                        </Typography>
-                                    </TableCell>}
-                                </TableRow>
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper> || null}
-
-            { /* File content */}
-            {!file_error && file && <Paper elevation={0} sx={{
-                width: "100%"
-            }}>
-                <FileViewer
-                    file={file}
-                    show_edit_button={AccountStore.publicKey === owner}
-                    edit_path={`/${nip19.npubEncode(owner)}/${name}/edit?path=${file.path.split("/").slice(1).join("/")}`}
-                />
-            </Paper>}
+            <Divider sx={{
+                width: "100%",
+            }} />
         </Box>
+
+        {([
+            <RepositoryCodeViewer
+                owner={owner}
+                name={name}
+                path={path}
+                file={file}
+                files={files}
+                files_error={files_error}
+                file_error={file_error}
+                fileCreationModalOpen={modalOpen}
+                setFileCreationModalOpen={setModalOpen}
+            />,
+            <RepositoryIssues
+                owner={owner}
+                name={name}
+                issues={issues}
+                newIssueModalOpen={modalOpen}
+                setNewIssueModalOpen={setModalOpen}
+                ipfs_hash={lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)![1]}
+            />,
+        ])[selectedTabIndex]}
     </Box>
 }

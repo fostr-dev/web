@@ -33,6 +33,8 @@ function App() {
 
                     <Route path="/:owner/:name" element={<Repository />} />
                     <Route path="/:owner/:name/edit" element={<RepositoryFileEditor />} />
+                    <Route path="/:owner/:name/:tab" element={<Repository />} />
+                    <Route path="/:owner/:name/:tab/:id" element={<Repository />} />
                     <Route path="/:account" element={<Account />} />
                 </Routes>
             </HashRouter>

@@ -24,6 +24,27 @@ export async function fetchEventsByAuthorAndRepository(author: string, repositor
     ])
     return events
 }
+export async function fetchEventsByRepository(owner: string, repository: string) {
+    const events = await pool.list(relays, [
+        {   
+            kinds: [96],
+            "#b": [repository],
+            "#p": [owner],
+        }
+    ])
+    return events
+}
+export async function fetchEventsByIssue(owner: string, repository: string, issue: string) {
+    const events = await pool.list(relays, [
+        {
+            kinds: [96],
+            "#b": [repository],
+            "#p": [owner],
+            "#e": [issue],
+        }
+    ])
+    return events
+}
 export interface ProfileInfo {
     name?: string,
     picture?: string,
@@ -56,17 +77,8 @@ export async function validateNip05(pubkey:string, name:string):Promise<boolean>
     if(!profile)return false
     return profile.pubkey === pubkey
 }
-export async function publishRevision(repository:string, dataLink: string, message?: string){
-    const event = {
-        kind: 96,
-        pubkey: AccountStore.publicKey,
-        created_at: Math.floor(Date.now() / 1000),
-        tags: [
-            ["b", repository],
-            ...(message ? [["t", message]] : [])
-        ],
-        content: dataLink
-    } as any
+
+export async function publishEvent(event: Event){
     event.id = getEventHash(event)
     event.sig = signEvent(event, AccountStore.privateKey!.key)
     
@@ -91,4 +103,45 @@ export async function publishRevision(repository:string, dataLink: string, messa
             resolve(event)
         })
     })
+}
+export async function createIssue(owner:string, repository:string, title:string, content:string){
+    const event = {
+        kind: 96,
+        pubkey: AccountStore.publicKey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ["b", repository],
+            ["p", owner],
+            ["c", title]
+        ],
+        content
+    } as any
+    return publishEvent(event)
+}
+export async function replyToIssue(owner:string, repository:string, issue:string, content:string){
+    const event = {
+        kind: 96,
+        pubkey: AccountStore.publicKey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ["b", repository],
+            ["p", owner],
+            ["e", issue]
+        ],
+        content
+    } as any
+    return publishEvent(event)
+}
+export async function publishRevision(repository:string, dataLink: string, message?: string){
+    const event = {
+        kind: 96,
+        pubkey: AccountStore.publicKey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ["b", repository],
+            ...(message ? [["t", message]] : [])
+        ],
+        content: dataLink
+    } as any
+    return publishEvent(event)
 }
