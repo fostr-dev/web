@@ -38,7 +38,7 @@ export default function RepositoryIssueEditor({
         />}
 
         <TextField
-            label="Issue Content"
+            label={allowTitle ? "Content" : "Your thoughts"}
             multiline
             rows={6}
             maxRows={Infinity}
