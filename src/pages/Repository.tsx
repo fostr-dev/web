@@ -99,7 +99,7 @@ export default function Repository(){
             return true
         })
         
-        if(!validEvents.length)throw new Error("This repository does not exist")
+        if(!validEvents.length)throw new Error("Cannot find repository on relays")
 
         // only events, made by the owner, counted as commits
         return validEvents
@@ -226,7 +226,7 @@ export default function Repository(){
     />
     if(!lastCommit)return <ErrorPage
         title="Repository not found"
-        reason="Failed to find repository on relays"
+        reason="The repository does not exist"
         onRefresh={refresh}
     />
     switch(selectedTabIndex){
