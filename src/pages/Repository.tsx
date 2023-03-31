@@ -226,7 +226,7 @@ export default function Repository(){
     />
     if(!lastCommit)return <ErrorPage
         title="Repository not found"
-        reason="The repository does not exist"
+        reason="Failed to find repository on relays"
         onRefresh={refresh}
     />
     switch(selectedTabIndex){

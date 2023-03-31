@@ -87,8 +87,8 @@ export async function publishEvent(event: Event){
     return new Promise<Event>((resolve, reject) => {
         let responses = 0
         let publishedOnce = false
-        pub.on("failed", (reason:string) => {
-            toast.error(reason)
+        pub.on("failed", (relay:string) => {
+            toast.error(`Publishing event to ${relay} failed!`)
             responses++
             if(responses === relays.length){
                 if(!publishedOnce){

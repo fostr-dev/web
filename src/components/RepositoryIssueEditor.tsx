@@ -27,7 +27,7 @@ export default function RepositoryIssueEditor({
         alignItems: "center"
     }}>
         <Typography variant="h6">
-            {allowTitle ? "Create Issue" : "Create Comment"}
+            {allowTitle ? "Create Issue" : "Comment"}
         </Typography>
         {allowTitle && <TextField
             label="Issue Title"
@@ -60,7 +60,7 @@ export default function RepositoryIssueEditor({
                 onSubmit?.(title, content)
             }}
         >
-            {allowTitle ? "Create Issue" : "Create Comment"}
+            {allowTitle ? "Create Issue" : "Comment"}
         </LoadingButton>
     </Box>
 }
