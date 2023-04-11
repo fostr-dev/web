@@ -13,6 +13,7 @@ import { fetchEventsByAuthorAndRepository, fetchEventsByRepository } from "../no
 import { getFileViewers, REPOSITORY_NAME_REGEX, VALIDE_FILE_URL_SCHEME } from "../utils";
 import ErrorPage from "./ErrorPage";
 import LoadingPage from "./LoadingPage";
+import RepositoryPullRequests from "../components/RepositoryPullRequests";
 
 export enum RepositoryTab {
     Files,
@@ -121,6 +122,23 @@ export default function Repository(){
         const events = await fetchEventsByRepository(owner, name)
         const validEvents = events.filter(event => {
             if(!event.tags.find(t => t[0] === "c"))return false
+
+            return true
+        })
+
+        return validEvents
+    }, [owner, name, refreshId, selectedTabIndex])
+    const [
+        pulls_loaded,
+        pulls,
+        pulls_error
+    ] = usePromise(async () => {
+        if(selectedTabIndex !== RepositoryTab.Pulls)return null
+        if(!owner)return null
+        if(!name)return null
+        const events = await fetchEventsByRepository(owner, name)
+        const validEvents = events.filter(event => {
+            if(!event.tags.find(t => t[0] === "m"))return false
 
             return true
         })
@@ -246,6 +264,14 @@ export default function Repository(){
                 onRefresh={refresh}
             />
             break
+        case RepositoryTab.Pulls:
+            if(!pulls_loaded)return <LoadingPage/>
+            if(pulls_error)return <ErrorPage
+                title="Failed to load pull requests"
+                reason={pulls_error.message}
+                onRefresh={refresh}
+            />
+            break
     }
 
     return <Box sx={{
@@ -351,6 +377,14 @@ export default function Repository(){
                 setNewIssueModalOpen={setModalOpen}
                 ipfs_hash={lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)![1]}
             />,
+            <RepositoryPullRequests
+                owner={owner}
+                name={name}
+                pulls={pulls}
+                newPullRequestModalOpen={modalOpen}
+                setNewPullRequestModalOpen={setModalOpen}
+                ipfs_hash={lastCommit.content.match(/^ipfs:\/\/([^\\]+)/)![1]}
+            />
         ])[selectedTabIndex]}
     </Box>
 }

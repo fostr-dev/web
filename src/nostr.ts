@@ -119,6 +119,20 @@ export async function createIssue(owner:string, repository:string, title:string,
     } as any
     return publishEvent(event)
 }
+export async function createPullRequest(owner:string, repository:string, title:string, content:string){
+    const event = {
+        kind: 96,
+        pubkey: AccountStore.publicKey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ["b", repository],
+            ["p", owner],
+            ["m", title]
+        ],
+        content
+    } as any
+    return publishEvent(event)
+}
 export async function replyToIssue(owner:string, repository:string, issue:string, content:string){
     const event = {
         kind: 96,

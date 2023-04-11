@@ -12,12 +12,15 @@ import RepositoryIssue from "./RepositoryIssue"
 export function RepositoryIssueCard({
     issue,
     owner,
-    name
+    name,
+    isPullRequest = false
 }:{
     issue: Event,
     owner: string,
-    name: string
+    name: string,
+    isPullRequest?: boolean
 }){
+    const type = isPullRequest ? "pull" : "issue"
     const nip05 = useNip05(issue.pubkey)
     return <Card sx={{
         width: "100%",
@@ -42,7 +45,7 @@ export function RepositoryIssueCard({
         </Link>
         <Link
             component={RouterLink}
-            to={`/${nip19.npubEncode(owner)}/${name}/issues/${issue.id}`}
+            to={`/${nip19.npubEncode(owner)}/${name}/${type}s/${issue.id}`}
             sx={{
                 color: "white",
                 textDecoration: "none",
@@ -56,12 +59,14 @@ export function RepositoryIssueCard({
             <Typography variant="h6" sx={{
                 wordBreak: "break-all"
             }}>
-                {issue.tags.find(tag => tag[0] === "c")?.[1] || "Untitled"}
+                {issue.tags.find(
+                    tag => tag[0] === (isPullRequest ? "m" : "c")
+                )?.[1] || "Untitled"}
             </Typography>
         </Link>
         <Link
             component={RouterLink}
-            to={`/${nip19.npubEncode(owner)}/${name}/issues/${issue.id}`}
+            to={`/${nip19.npubEncode(owner)}/${name}/${type}s/${issue.id}`}
             sx={{
                 textDecoration: "none",
                 "&:hover": {
@@ -156,11 +161,13 @@ export default function RepositoryIssues({
 export function RepositoryIssueList({
     owner,
     name,
-    issues
+    issues,
+    isPullRequest = false
 }:{
     owner: string,
     name: string,
-    issues?: Event[]
+    issues?: Event[],
+    isPullRequest?: boolean
 }){
     return  <Paper sx={{
         width: "100%",
@@ -176,10 +183,11 @@ export function RepositoryIssueList({
                 owner={owner}
                 name={name}
                 key={issue.id}
+                isPullRequest
             />) : <Alert severity="warning" sx={{
                 width: "100%"
             }}>
-                No issues found for <span style={{
+                No {isPullRequest ? "pull requests" : "issues"} found for <span style={{
                     fontWeight: "bold",
                     fontFamily: "'Overpass Mono', monospace"
                 }}>{owner}/{name}</span>

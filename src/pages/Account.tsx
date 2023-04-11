@@ -29,11 +29,6 @@ export default function Account(){
         }
     }, [account_raw])
 
-    if(!account)return <ErrorPage
-        title="Invalid account"
-        reason="The account you provided is invalid"
-    />
-
     const [
         profile_loaded,
         profile,
@@ -85,8 +80,14 @@ export default function Account(){
     }, [account])
 
     const display_account = useMemo(() => {
+        if(!account)return
         return nip19.npubEncode(account)
     }, [account])
+
+    if(!account)return <ErrorPage
+        title="Invalid account"
+        reason="The account you provided is invalid"
+    />
 
     if(!profile_loaded)return <LoadingPage/>
     if(profile_error)return <ErrorPage

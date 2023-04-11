@@ -55,16 +55,20 @@ export default function RepositoryIssue({
     issue,
     owner,
     name,
-    ipfs_hash
+    ipfs_hash,
+    isPullRequest = false
 }: {
     issue: Event,
     owner: string,
     name: string,
-    ipfs_hash: string
+    ipfs_hash: string,
+    isPullRequest?: boolean
 }){
     const authorName = useNip05(issue.pubkey)
     const title = useMemo(() => {
-        return issue.tags.find(tag => tag[0] === "c")?.[1] || "Untitled"
+        return issue.tags.find(
+            tag => tag[0] === (isPullRequest ? "m" : "c")
+        )?.[1] || "Untitled"
     }, [issue.tags])
     
     const [issueEditorRefreshId, setIssueEditorRefreshId] = useRefresh()
@@ -114,7 +118,8 @@ export default function RepositoryIssue({
                 textAlign: "left"
             }}>
                 <Viewer file={{
-                    content: issue.content,
+                    content: isPullRequest ? 
+                        `Wants to merge \`${issue.content}\` into this repository` : issue.content,
                     path: `${ipfs_hash}/issue.md`,
                     viewers: [["markdown", "markdown"]],
                     too_large: false
