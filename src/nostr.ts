@@ -2,7 +2,7 @@ import { Event, getEventHash, nip05, signEvent, SimplePool } from "nostr-tools";
 import { toast } from "react-hot-toast";
 import AccountStore from "./stores/AccountStore";
 
-export const pool = new SimplePool()
+export const pool = new SimplePool({ getTimeout: 3000 })
 export const relays = ["wss://brb.io","wss://eden.nostr.land","wss://relay.damus.io","wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band","wss://offchain.pub"]
 
 export async function fetchEventsByAuthor(author: string) {
@@ -87,8 +87,8 @@ export async function publishEvent(event: Event){
     return new Promise<Event>((resolve, reject) => {
         let responses = 0
         let publishedOnce = false
-        pub.on("failed", (reason:string) => {
-            toast.error(reason)
+        pub.on("failed", (relay:string) => {
+            toast.error(`Publishing event to ${relay} failed!`)
             responses++
             if(responses === relays.length){
                 if(!publishedOnce){
