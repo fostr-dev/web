@@ -119,7 +119,7 @@ export default function RepositoryIssue({
             }}>
                 <Viewer file={{
                     content: isPullRequest ? 
-                        `Wants to merge \`${issue.content}\` into this repository` : issue.content,
+                        `Wants to merge \`\`${issue.content}\`\` into this repository` : issue.content,
                     path: `${ipfs_hash}/issue.md`,
                     viewers: [["markdown", "markdown"]],
                     too_large: false
