@@ -11,6 +11,7 @@ import FileCreationModal from "../modals/FileCreationModal";
 import { fetchEventsByAuthorAndRepository, publishRevision } from "../nostr";
 import AccountStore from "../stores/AccountStore";
 import { formatFileSize, VALIDE_FILE_URL_SCHEME } from "../utils";
+import useAppEvent from "../hooks/useAppEvent";
 
 export default function RepositoryCodeViewer({
     owner,
@@ -35,6 +36,8 @@ export default function RepositoryCodeViewer({
 }){
     const isMobile = useIsMobile()
     const navigate = useNavigate()
+    useAppEvent("AccountStore:change")
+
     return <Box sx={{
         width: "100%",
         maxWidth: "1200px",

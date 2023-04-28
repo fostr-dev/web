@@ -39,6 +39,7 @@
     "@mui/material": "^5.11.12",
     "buffer": "^6.0.3",
     "csstype": "^3.0.10",
+    "events": "^3.3.0",
     "highlight.js": "^11.7.0",
     "highlightjs-solidity": "^2.0.6",
     "highlightjs-soliditypp": "github:JeanOUINA/highlightjs-soliditypp",

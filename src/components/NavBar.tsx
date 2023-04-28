@@ -1,16 +1,21 @@
-import { Add } from "@mui/icons-material";
+import { Add, Settings } from "@mui/icons-material";
 import { AppBar, Box, Button, IconButton, Link, Toolbar } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import useNip05 from "../hooks/useNip05";
 import AccountStore from "../stores/AccountStore";
 import { truncatePublicKey } from "../utils";
+import Modal from "./Modal";
+import SettingsModal from "../modals/SettingsModal";
+import useAppEvent from "../hooks/useAppEvent";
 
 export default function NavBar() {
     const location = useLocation()
     const [navBarHeight, setNavBarHeight] = useState(0)
     const [appHeight, setAppHeight] = useState(window.innerHeight)
     const name = useNip05(AccountStore.publicKey ?? undefined)
+    const [settingsOpen, setSettingsOpen] = useState(false)
+    useAppEvent("AccountStore:change")
 
     useEffect(() => {
         const appHeight = () => {
@@ -53,6 +58,11 @@ export default function NavBar() {
                     <Add/>
                 </IconButton>
             </Link>
+            <IconButton onClick={() => {
+                setSettingsOpen(true)
+            }}>
+                <Settings/>
+            </IconButton>
 
             {AccountStore.privateKey ? <Link
                 component={RouterLink}
@@ -78,6 +88,11 @@ export default function NavBar() {
                     Login
                 </Button>
             </Link>}
+            <Modal open={settingsOpen} onClose={() => {
+                setSettingsOpen(false)
+            }}>
+                <SettingsModal />
+            </Modal>
         </Toolbar>
     </AppBar>
 }

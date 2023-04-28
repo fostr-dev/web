@@ -6,6 +6,7 @@ import AccountStore from "../stores/AccountStore";
 import SwipeableViews from "react-swipeable-views";
 import CopyTextField from "../components/CopyTextField";
 import useTitle from "../hooks/useTitle";
+import useAppEvent from "../hooks/useAppEvent";
 
 export default function Login(){
     useTitle("Login")
@@ -35,6 +36,7 @@ export default function Login(){
             navigate(location.state?.redirect ?? "/")
         }
     }, [])
+    useAppEvent("AccountStore:change")
 
     return <Box sx={{
         minHeight: "var(--app-height)",
@@ -99,13 +101,13 @@ export default function Login(){
                             if(privateKey.startsWith("nsec")){
                                 data = nip19.decode(privateKey).data.toString()
                             }
+                            navigate(location.state?.redirect ?? "/account")
                             AccountStore.privateKey = {
                                 v: 0,
                                 key: data
                             }
-                            navigate(location.state?.redirect ?? "/account")
                         }}
-                    >
+                        >
                         Login
                     </Button>
                 </Card>

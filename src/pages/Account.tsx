@@ -68,7 +68,7 @@ export default function Account(){
             
             return true
         })
-        if(!validEvents.length)return []
+        if(!validEvents?.length)return []
         
         const repositories = new Set<string>()
 

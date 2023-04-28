@@ -1,4 +1,5 @@
 import { getPublicKey } from "nostr-tools"
+import { appEvents } from "../events"
 
 export interface AccountPrivatekey {
     key: string,
@@ -17,6 +18,7 @@ export default new class AccountStore {
 
     set privateKey(privateKey: AccountPrivatekey | null) {
         localStorage.setItem("privateKey", JSON.stringify(privateKey))
+        appEvents.emit("AccountStore:change")
     }
 
     get publicKey(): string | null {

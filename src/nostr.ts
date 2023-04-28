@@ -1,12 +1,12 @@
 import { Event, getEventHash, nip05, signEvent, SimplePool } from "nostr-tools";
 import { toast } from "react-hot-toast";
 import AccountStore from "./stores/AccountStore";
+import RelayStore from "./stores/RelayStore";
 
 export const pool = new SimplePool({ getTimeout: 3000 })
-export const relays = ["wss://brb.io","wss://eden.nostr.land","wss://relay.damus.io","wss://nostr.adpo.co","wss://nos.lol","wss://relay.nostr.band","wss://offchain.pub"]
 
 export async function fetchEventsByAuthor(author: string) {
-    const events = await pool.list(relays, [
+    const events = await pool.list(RelayStore.relays, [
         {
             kinds: [96],
             authors: [author],
@@ -15,7 +15,7 @@ export async function fetchEventsByAuthor(author: string) {
     return events
 }
 export async function fetchEventsByAuthorAndRepository(author: string, repository: string) {
-    const events = await pool.list(relays, [
+    const events = await pool.list(RelayStore.relays, [
         {
             kinds: [96],
             authors: [author],
@@ -25,7 +25,7 @@ export async function fetchEventsByAuthorAndRepository(author: string, repositor
     return events
 }
 export async function fetchEventsByRepository(owner: string, repository: string) {
-    const events = await pool.list(relays, [
+    const events = await pool.list(RelayStore.relays, [
         {   
             kinds: [96],
             "#b": [repository],
@@ -35,7 +35,7 @@ export async function fetchEventsByRepository(owner: string, repository: string)
     return events
 }
 export async function fetchEventsByIssue(owner: string, repository: string, issue: string) {
-    const events = await pool.list(relays, [
+    const events = await pool.list(RelayStore.relays, [
         {
             kinds: [96],
             "#b": [repository],
@@ -54,7 +54,7 @@ export interface ProfileInfo {
     nip05?: string
 }
 export async function getProfileInfo(pubkey: string): Promise<ProfileInfo> {
-    const event = await pool.get(relays, {
+    const event = await pool.get(RelayStore.relays, {
         kinds: [0],
         authors: [pubkey],
     })
@@ -83,6 +83,7 @@ export async function publishEvent(event: Event){
     event.sig = signEvent(event, AccountStore.privateKey!.key)
     console.log(JSON.stringify(event, null, 4))
     
+    const relays = RelayStore.relays
     const pub = pool.publish(relays, event)
     return new Promise<Event>((resolve, reject) => {
         let responses = 0

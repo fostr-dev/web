@@ -9,6 +9,7 @@ import { RepositoryIssueList } from "./RepositoryIssues"
 import NewPullRequest from "../modals/NewPullRequest"
 import { VALIDE_FILE_URL_SCHEME } from "../utils"
 import AccountStore from "../stores/AccountStore"
+import useAppEvent from "../hooks/useAppEvent"
 
 export default function RepositoryPullRequests({
     owner,
@@ -29,6 +30,8 @@ export default function RepositoryPullRequests({
         id
     } = useParams<{id?: string}>()
     const navigate = useNavigate()
+    useAppEvent("AccountStore:change")
+
     return <Box sx={{
         width: "100%",
         maxWidth: "1200px",

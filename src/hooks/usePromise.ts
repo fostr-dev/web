@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export default function usePromise<Value=any, Err=Error>(
     factory: (params:{
         cancel: boolean
-    }) => Promise<Value | null>,
+    }) => Promise<Value | undefined>,
     deps: any[]
 ):[finished:boolean, result:Value|undefined, error:Err|undefined]{
     const [finished, setFinished] = useState<boolean>(false)

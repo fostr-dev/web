@@ -12,8 +12,10 @@ import ipfs, { EMPTY_DIRECTORY_IPFS_CID } from "../ipfs"
 import SwipeableViews from "react-swipeable-views"
 import { toast } from "react-hot-toast"
 import FilePicker from "../components/FilePicker"
+import useAppEvent from "../hooks/useAppEvent"
 
 export default function NewRepository(){
+    useAppEvent("AccountStore:change")
     const account = AccountStore.publicKey
     const navigate = useNavigate()
 

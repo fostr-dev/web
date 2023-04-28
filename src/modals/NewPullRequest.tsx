@@ -7,6 +7,7 @@ import { useState } from "react";
 import useNip05 from "../hooks/useNip05";
 import { nip19 } from "nostr-tools";
 import { LoadingButton } from "@mui/lab";
+import useAppEvent from "../hooks/useAppEvent";
 
 export default function NewPullRequest({
     owner,
@@ -22,6 +23,7 @@ export default function NewPullRequest({
     const [loading, setLoading] = useState(false)
     const user_nip05 = useNip05(AccountStore.publicKey ?? undefined)
     const owner_nip05 = useNip05(owner)
+    useAppEvent("AccountStore:change")
 
     const [
         repositories_loaded,
